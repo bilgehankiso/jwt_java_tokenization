@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.JwtRequest;
 import com.example.demo.model.JwtResponse;
+import com.example.demo.model.ValidateJwtRequest;
 import com.example.demo.service.JwtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +24,8 @@ public class JwtController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<String> validateJwt(@RequestBody JwtRequest jwtRequest) {
-        boolean isValid = jwtService.validateToken(jwtRequest.getInputData());
+    public ResponseEntity<String> validateJwt(@RequestBody ValidateJwtRequest validateJwtRequest) {
+        boolean isValid = jwtService.validateToken(validateJwtRequest.getTokenUuid());
         return ResponseEntity.ok(isValid ? "Valid Token" : "Invalid Token");
     }
 
