@@ -7,29 +7,33 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
 @Service
 public class JwtService {
 
-    private final String SECRET_KEY = "your_secret_key";
+    private static final String SECRET_KEY = "your-secret-key";
 
-    // JWT oluşturma
     public JwtResponse generateToken(JwtRequest jwtRequest) {
-        String tokenUuid = UUID.randomUUID().toString();
+
+        String uuid = UUID.randomUUID().toString();
+
+        SecretKeySpec secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+
         String token = Jwts.builder()
-                .setSubject(jwtRequest.getClientName())
+                .setSubject(uuid)
                 .claim("inputData", jwtRequest.getInputData())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour expiration
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
 
-        return new JwtResponse(tokenUuid, token, "Bearer", new Date(System.currentTimeMillis() + 1000 * 60 * 60)); // 1 hour expiration
+        JwtResponse jwtResponse = new JwtResponse(uuid, token, "Bearer", new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10));
+
+        return jwtResponse;
     }
 
-    // JWT doğrulama
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -42,12 +46,11 @@ public class JwtService {
         }
     }
 
-    // JWT çözme
     public Claims decodeToken(String token) {
         return Jwts.parser()
                 .setSigningKey(SECRET_KEY)
                 .parseClaimsJws(token)
                 .getBody();
-//        return null;
     }
 }
+
