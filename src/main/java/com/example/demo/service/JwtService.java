@@ -32,8 +32,9 @@ public class JwtService {
     // JWT doğrulama
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
+            Jwts.parserBuilder()
                     .setSigningKey(SECRET_KEY)
+                    .build()
                     .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
