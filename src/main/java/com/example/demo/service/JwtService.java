@@ -21,19 +21,12 @@ import java.util.*;
 @Service
 public class JwtService implements IJwtService {
 
-    private final JwtTokenRepository jwtTokenRepository;
+    private final JwtTokenRepository IJwtTokenRepository;
 
     private static final String SECRET_KEY = "M2Y1YTk4YzAxZjY0NDYzZWZmY2QyYTkzZDI5ZDU2ZDZkZjY4YzA0ZGViZDNlMGNhZTBiZDE2OTkxNzNi";
 
-    public JwtService(JwtTokenRepository jwtTokenRepository) {
-        this.jwtTokenRepository = jwtTokenRepository;
-    }
-
-    private static String formatToISO(Date date) {
-        Instant instant = date.toInstant();
-        ZonedDateTime zonedDateTime = instant.atZone(java.time.ZoneId.systemDefault());
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-        return zonedDateTime.format(formatter);
+    public JwtService(JwtTokenRepository IJwtTokenRepository) {
+        this.IJwtTokenRepository = IJwtTokenRepository;
     }
 
     public JwtResponse generateToken(JwtRequest jwtRequest) {
@@ -74,14 +67,14 @@ public class JwtService implements IJwtService {
         jwtTokenEntity.setCreatedBy(jwtRequest.getClientName());
         jwtTokenEntity.setInputData(jwtRequest.getInputData());
 
-        jwtTokenRepository.save(jwtTokenEntity);
+        IJwtTokenRepository.save(jwtTokenEntity);
 
 
         return new JwtResponse(uuid, token, "Bearer", new Date(System.currentTimeMillis() + 1000 * 60 * 60));
     }
 
     public boolean validateToken(String uuid) {
-        Optional<JwtTokenEntity> tokenEntity = jwtTokenRepository.findByUuid(uuid);
+        Optional<JwtTokenEntity> tokenEntity = IJwtTokenRepository.findByUuid(uuid);
         if (tokenEntity.isPresent()) {
             String token = tokenEntity.get().getToken();
             try {
@@ -109,7 +102,7 @@ public class JwtService implements IJwtService {
     }
 
     public DecodeJwtResponse decodeToken(String uuid) {
-        Optional<JwtTokenEntity> tokenEntity = jwtTokenRepository.findByUuid(uuid);
+        Optional<JwtTokenEntity> tokenEntity = IJwtTokenRepository.findByUuid(uuid);
         if (tokenEntity.isPresent()) {
             String token = tokenEntity.get().getToken();
 
@@ -126,10 +119,17 @@ public class JwtService implements IJwtService {
                 System.out.println(e);
             }
             if (tokenInfo != null) {
-                DecodeJwtResponse decodeJwtResponse = new DecodeJwtResponse(tokenEntity.get().getInputData(),tokenInfo.getExpired_date());
+                DecodeJwtResponse decodeJwtResponse = new DecodeJwtResponse(tokenEntity.get().getInputData(), tokenInfo.getExpired_date());
                 return decodeJwtResponse;
             }
         }
         return null;
+    }
+
+    private static String formatToISO(Date date) {
+        Instant instant = date.toInstant();
+        ZonedDateTime zonedDateTime = instant.atZone(java.time.ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        return zonedDateTime.format(formatter);
     }
 }

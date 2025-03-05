@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.interfaces.IJwtService;
 import com.example.demo.model.DecodeJwtResponse;
 import com.example.demo.model.JwtRequest;
 import com.example.demo.model.JwtResponse;
@@ -12,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/jwt")
 public class JwtController {
 
-    private final JwtService jwtService;
+    private final IJwtService jwtService;
 
-    public JwtController(JwtService jwtService) {
+    public JwtController(IJwtService jwtService) {
         this.jwtService = jwtService;
     }
 
