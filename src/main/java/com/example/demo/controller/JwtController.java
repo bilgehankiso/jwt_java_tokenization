@@ -30,9 +30,9 @@ public class JwtController {
     }
 
     @PostMapping("/decode")
-    public ResponseEntity<Object> decodeJwt(@RequestBody JwtRequest jwtRequest) {
+    public ResponseEntity<Object> decodeJwt(@RequestBody ValidateJwtRequest jwtRequest) {
         try {
-            var claims = jwtService.decodeToken(jwtRequest.getInputData());
+            var claims = jwtService.decodeToken(jwtRequest);
             return ResponseEntity.ok(claims);
         } catch (Exception e) {
             return ResponseEntity.status(400).body("Invalid Token");
