@@ -7,9 +7,9 @@ import com.example.demo.model.JwtResponse;
 
 public interface IJwtService {
 
-    JwtResponse generateToken(JwtRequest jwtRequest);
+    JwtResponse generateJwtToken(JwtRequest jwtRequest);
 
-    boolean validateToken(String uuid);
+    boolean validateJwtToken(String uuid);
 
-    DecodeJwtResponse decodeToken(String uuid);
+    DecodeJwtResponse decodeJwtToken(String uuid);
 }

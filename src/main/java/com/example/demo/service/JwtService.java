@@ -29,7 +29,7 @@ public class JwtService implements IJwtService {
         this.IJwtTokenRepository = IJwtTokenRepository;
     }
 
-    public JwtResponse generateToken(JwtRequest jwtRequest) {
+    public JwtResponse generateJwtToken(JwtRequest jwtRequest) {
         String uuid = UUID.randomUUID().toString();
 
         Date createdDate = new Date(System.currentTimeMillis());
@@ -61,11 +61,10 @@ public class JwtService implements IJwtService {
         JwtTokenEntity jwtTokenEntity = new JwtTokenEntity(uuid, token, "Bearer", createdDate, expiredDate, jwtRequest.getClientName(), jwtRequest.getInputData());
         IJwtTokenRepository.save(jwtTokenEntity);
 
-
         return new JwtResponse(uuid, token, "Bearer", new Date(System.currentTimeMillis() + 1000 * 60 * 60));
     }
 
-    public boolean validateToken(String uuid) {
+    public boolean validateJwtToken(String uuid) {
         Optional<JwtTokenEntity> tokenEntity = IJwtTokenRepository.findByUuid(uuid);
         if (tokenEntity.isPresent()) {
             String token = tokenEntity.get().getToken();
@@ -93,7 +92,7 @@ public class JwtService implements IJwtService {
         return false;
     }
 
-    public DecodeJwtResponse decodeToken(String uuid) {
+    public DecodeJwtResponse decodeJwtToken(String uuid) {
         Optional<JwtTokenEntity> tokenEntity = IJwtTokenRepository.findByUuid(uuid);
         if (tokenEntity.isPresent()) {
             String token = tokenEntity.get().getToken();
