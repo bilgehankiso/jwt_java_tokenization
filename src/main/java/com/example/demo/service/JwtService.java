@@ -1,28 +1,25 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.JwtTokenEntity;
+import com.example.demo.interfaces.IJwtService;
 import com.example.demo.model.*;
 import com.example.demo.repository.JwtTokenRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-import org.json.JSONObject;
 
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
-public class JwtService {
-
+public class JwtService implements IJwtService {
 
     private final JwtTokenRepository jwtTokenRepository;
 
