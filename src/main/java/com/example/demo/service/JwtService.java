@@ -58,15 +58,7 @@ public class JwtService implements IJwtService {
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
 
-        JwtTokenEntity jwtTokenEntity = new JwtTokenEntity();
-        jwtTokenEntity.setUuid(uuid);
-        jwtTokenEntity.setToken(token);
-        jwtTokenEntity.setTokenType("Bearer");
-        jwtTokenEntity.setCreatedDate(createdDate);
-        jwtTokenEntity.setExpiredDate(expiredDate);
-        jwtTokenEntity.setCreatedBy(jwtRequest.getClientName());
-        jwtTokenEntity.setInputData(jwtRequest.getInputData());
-
+        JwtTokenEntity jwtTokenEntity = new JwtTokenEntity(uuid, token, "Bearer", createdDate, expiredDate, jwtRequest.getClientName(), jwtRequest.getInputData());
         IJwtTokenRepository.save(jwtTokenEntity);
 
 

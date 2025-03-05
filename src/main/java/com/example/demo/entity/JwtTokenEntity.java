@@ -34,4 +34,17 @@ public class JwtTokenEntity {
     private String createdBy;
 
     private String inputData;
+
+    public JwtTokenEntity() {
+
+    }
+    public JwtTokenEntity(String uuid, String token, String tokenType, Date createdDate, Date expiredDate, String createdBy, String inputData) {
+        this.uuid = uuid;
+        this.token = token;
+        this.tokenType = tokenType;
+        this.createdDate = createdDate;
+        this.expiredDate = expiredDate;
+        this.createdBy = createdBy;
+        this.inputData = inputData;
+    }
 }
