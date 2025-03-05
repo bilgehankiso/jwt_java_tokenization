@@ -21,6 +21,9 @@ public class JwtController {
     public ResponseEntity<JwtResponse> generateJwt(@RequestBody JwtRequest jwtRequest) {
         try {
             JwtResponse jwtResponse = jwtService.generateJwtToken(jwtRequest);
+            if (jwtResponse == null) {
+                return ResponseEntity.badRequest().build();
+            }
             return ResponseEntity.ok(jwtResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
