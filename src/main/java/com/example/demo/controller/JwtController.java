@@ -19,26 +19,34 @@ public class JwtController {
 
     @PostMapping("/generate")
     public ResponseEntity<JwtResponse> generateJwt(@RequestBody JwtRequest jwtRequest) {
-        JwtResponse jwtResponse = jwtService.generateJwtToken(jwtRequest);
-        return ResponseEntity.ok(jwtResponse);
+        try {
+            JwtResponse jwtResponse = jwtService.generateJwtToken(jwtRequest);
+            return ResponseEntity.ok(jwtResponse);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/validate")
     public ResponseEntity<String> validateJwt(@RequestBody ValidateJwtRequest validateJwtRequest) {
-        boolean isValid = jwtService.validateJwtToken(validateJwtRequest.getTokenUuid());
-        return ResponseEntity.ok(isValid ? "JWT token is valid" : "JWT token is invalid");
+        try {
+            boolean isValid = jwtService.validateJwtToken(validateJwtRequest.getTokenUuid());
+            return ResponseEntity.ok(isValid ? "JWT token is valid" : "JWT token is invalid");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.toString());
+        }
     }
 
     @PostMapping("/decode")
     public ResponseEntity<Object> decodeJwt(@RequestBody ValidateJwtRequest jwtRequest) {
         try {
-            var claims = jwtService.decodeJwtToken(jwtRequest.getTokenUuid());
-            if (claims == null) {
+            var result = jwtService.decodeJwtToken(jwtRequest.getTokenUuid());
+            if (result == null) {
                 return ResponseEntity.badRequest().body("Cannot decode JWT token");
             }
-            return ResponseEntity.ok(claims);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.status(400).body("Cannot decode JWT token");
+            return ResponseEntity.status(400).body(e.toString());
         }
     }
 }
