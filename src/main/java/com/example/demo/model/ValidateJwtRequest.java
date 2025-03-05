@@ -1,7 +1,8 @@
 package com.example.demo.model;
 
 public class ValidateJwtRequest {
-   private String tokenUuid;
+    private String tokenUuid;
+
     public ValidateJwtRequest(String tokenUuid) {
         this.tokenUuid = tokenUuid;
     }

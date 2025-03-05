@@ -1,20 +1,24 @@
 package com.example.demo.service;
 
-import com.example.demo.model.JwtRequest;
-import com.example.demo.model.JwtResponse;
-import com.example.demo.model.JwtTokenEntity;
-import com.example.demo.model.ValidateJwtRequest;
+import com.example.demo.model.*;
 import com.example.demo.repository.JwtTokenRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
+import org.json.JSONObject;
+
 
 import javax.crypto.SecretKey;
-import java.util.Base64;
-import java.util.Date;
-import java.util.UUID;
+import javax.crypto.spec.SecretKeySpec;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class JwtService {
@@ -28,6 +32,13 @@ public class JwtService {
         this.jwtTokenRepository = jwtTokenRepository;
     }
 
+    private static String formatToISO(Date date) {
+        Instant instant = date.toInstant();
+        ZonedDateTime zonedDateTime = instant.atZone(java.time.ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        return zonedDateTime.format(formatter);
+    }
+
     public JwtResponse generateToken(JwtRequest jwtRequest) {
         String uuid = UUID.randomUUID().toString();
 
@@ -37,8 +48,22 @@ public class JwtService {
         byte[] decodedKey = Base64.getDecoder().decode(SECRET_KEY);
         SecretKey secretKey = new javax.crypto.spec.SecretKeySpec(decodedKey, 0, decodedKey.length, "HmacSHA256");
 
+        Map<String, String> subject = new HashMap<>();
+        subject.put("created_by", jwtRequest.getClientName());
+        subject.put("created_date", formatToISO(createdDate));
+        subject.put("expired_date", formatToISO(expiredDate));
+
+        String subjectJson;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            subjectJson = objectMapper.writeValueAsString(subject);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+
         String token = Jwts.builder()
-                .setSubject(jwtRequest.getClientName())
+                .setSubject(subjectJson)
                 .claim("inputData", jwtRequest.getInputData())
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
@@ -50,6 +75,7 @@ public class JwtService {
         jwtTokenEntity.setCreatedDate(createdDate);
         jwtTokenEntity.setExpiredDate(expiredDate);
         jwtTokenEntity.setCreatedBy(jwtRequest.getClientName());
+        jwtTokenEntity.setInputData(jwtRequest.getInputData());
 
         jwtTokenRepository.save(jwtTokenEntity);
 
@@ -57,22 +83,56 @@ public class JwtService {
         return new JwtResponse(uuid, token, "Bearer", new Date(System.currentTimeMillis() + 1000 * 60 * 60));
     }
 
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(SECRET_KEY)
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
+    public boolean validateToken(String uuid) {
+        Optional<JwtTokenEntity> tokenEntity = jwtTokenRepository.findByUuid(uuid);
+        if (tokenEntity.isPresent()) {
+            String token = tokenEntity.get().getToken();
+            try {
+                Claims claims = Jwts.parser()
+                        .setSigningKey(SECRET_KEY)
+                        .parseClaimsJws(token)
+                        .getBody();
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                JwtSubject tokenInfo = null;
+                try {
+                    tokenInfo = objectMapper.readValue(claims.getSubject(), JwtSubject.class);
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+                if (tokenInfo != null) {
+                    return true;
+                }
+
+            } catch (Exception e) {
+                return false;
+            }
         }
+        return false;
     }
 
-    public Claims decodeToken(ValidateJwtRequest validateJwtRequest) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(validateJwtRequest.getTokenUuid())
-                .getBody();
+    public DecodeJwtResponse decodeToken(String uuid) {
+        Optional<JwtTokenEntity> tokenEntity = jwtTokenRepository.findByUuid(uuid);
+        if (tokenEntity.isPresent()) {
+            String token = tokenEntity.get().getToken();
+
+            Claims claims = Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            JwtSubject tokenInfo = null;
+            try {
+                tokenInfo = objectMapper.readValue(claims.getSubject(), JwtSubject.class);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            if (tokenInfo != null) {
+                DecodeJwtResponse decodeJwtResponse = new DecodeJwtResponse(tokenEntity.get().getInputData(),tokenInfo.getExpired_date());
+                return decodeJwtResponse;
+            }
+        }
+        return null;
     }
 }

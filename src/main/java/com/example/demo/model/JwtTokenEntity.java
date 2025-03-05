@@ -32,4 +32,6 @@ public class JwtTokenEntity {
 
     @Column(nullable = false)
     private String createdBy;
+
+    private String inputData;
 }
