@@ -51,7 +51,6 @@ public class JwtService implements IJwtService {
             throw new RuntimeException(e);
         }
 
-
         String token = Jwts.builder()
                 .setSubject(subjectJson)
                 .claim("inputData", jwtRequest.getInputData())

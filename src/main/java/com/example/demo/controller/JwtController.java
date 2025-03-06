@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.interfaces.IJwtService;
+import com.example.demo.model.DecodeJwtResponse;
 import com.example.demo.model.JwtRequest;
 import com.example.demo.model.JwtResponse;
 import com.example.demo.model.ValidateJwtRequest;
@@ -41,15 +42,15 @@ public class JwtController {
     }
 
     @PostMapping("/decode")
-    public ResponseEntity<Object> decodeJwt(@RequestBody ValidateJwtRequest jwtRequest) {
+    public ResponseEntity<DecodeJwtResponse> decodeJwt(@RequestBody ValidateJwtRequest jwtRequest) {
         try {
             var result = jwtService.decodeJwtToken(jwtRequest.getTokenUuid());
             if (result == null) {
-                return ResponseEntity.badRequest().body("Cannot decode JWT token");
+                return ResponseEntity.badRequest().build();
             }
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(e.toString());
+            return ResponseEntity.badRequest().build();
         }
     }
 }
