@@ -1,11 +1,10 @@
 package com.example.demo;
 
 import com.example.demo.controller.JwtController;
-import com.example.demo.model.DecodeJwtResponse;
+import com.example.demo.model.DecodeJwtResponseDTO;
 import com.example.demo.model.JwtRequest;
 import com.example.demo.model.JwtResponse;
 import com.example.demo.model.ValidateJwtRequest;
-import com.example.demo.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -63,7 +62,7 @@ class JwtControllerTest {
     void testDecodeJwt_Decoced() {
         ValidateJwtRequest validateJwtRequest = new ValidateJwtRequest("8b36e674-e58e-430f-8670-70ad33ccd1c9");
 
-        ResponseEntity<DecodeJwtResponse> response = jwtController.decodeJwt(validateJwtRequest);
+        ResponseEntity<DecodeJwtResponseDTO> response = jwtController.decodeJwt(validateJwtRequest);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -74,7 +73,7 @@ class JwtControllerTest {
     void testDecodeJwt_NotDecoced() {
         ValidateJwtRequest validateJwtRequest = new ValidateJwtRequest("8b36e674-e58e-430f-8670-70ad33ccd1c9999");
 
-        ResponseEntity<DecodeJwtResponse> response = jwtController.decodeJwt(validateJwtRequest);
+        ResponseEntity<DecodeJwtResponseDTO> response = jwtController.decodeJwt(validateJwtRequest);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNull(response.getBody());

@@ -24,7 +24,6 @@ public class JwtService implements IJwtService {
     private final JwtTokenRepository IJwtTokenRepository;
 
     private static final String SECRET_KEY = "M2Y1YTk4YzAxZjY0NDYzZWZmY2QyYTkzZDI5ZDU2ZDZkZjY4YzA0ZGViZDNlMGNhZTBiZDE2OTkxNzNi";
-
     public JwtService(JwtTokenRepository IJwtTokenRepository) {
         this.IJwtTokenRepository = IJwtTokenRepository;
     }
@@ -39,12 +38,15 @@ public class JwtService implements IJwtService {
         SecretKey secretKey = new javax.crypto.spec.SecretKeySpec(decodedKey, 0, decodedKey.length, "HmacSHA256");
 
         Map<String, String> subject = new HashMap<>();
+        subject.put("uuid", uuid);
+        subject.put("data", jwtRequest.getInputData());
         subject.put("created_by", jwtRequest.getClientName());
         subject.put("created_date", formatToISO(createdDate));
         subject.put("expired_date", formatToISO(expiredDate));
 
         String subjectJson;
         ObjectMapper objectMapper = new ObjectMapper();
+
         try {
             subjectJson = objectMapper.writeValueAsString(subject);
         } catch (JsonProcessingException e) {
@@ -74,13 +76,17 @@ public class JwtService implements IJwtService {
                         .getBody();
 
                 ObjectMapper objectMapper = new ObjectMapper();
-                JwtSubject tokenInfo = null;
+                JwtSubjectDTO tokenInfo = null;
                 try {
-                    tokenInfo = objectMapper.readValue(claims.getSubject(), JwtSubject.class);
+                    tokenInfo = objectMapper.readValue(claims.getSubject(), JwtSubjectDTO.class);
                 } catch (Exception e) {
                     System.out.println(e);
                 }
-                if (tokenInfo != null) {
+                if (tokenInfo != null
+                        && tokenInfo.getUuid().equals(uuid)
+                        && tokenInfo.getExpired_date().after(new Date())
+                        && tokenInfo.getCreated_date().before(new Date())
+                ) {
                     return true;
                 }
 
@@ -91,7 +97,7 @@ public class JwtService implements IJwtService {
         return false;
     }
 
-    public DecodeJwtResponse decodeJwtToken(String uuid) {
+    public DecodeJwtResponseDTO decodeJwtToken(String uuid) {
         Optional<JwtTokenEntity> tokenEntity = IJwtTokenRepository.findByUuid(uuid);
         if (tokenEntity.isPresent()) {
             String token = tokenEntity.get().getToken();
@@ -102,15 +108,14 @@ public class JwtService implements IJwtService {
                     .getBody();
 
             ObjectMapper objectMapper = new ObjectMapper();
-            JwtSubject tokenInfo = null;
+            JwtSubjectDTO tokenInfo = null;
             try {
-                tokenInfo = objectMapper.readValue(claims.getSubject(), JwtSubject.class);
+                tokenInfo = objectMapper.readValue(claims.getSubject(), JwtSubjectDTO.class);
             } catch (Exception e) {
                 System.out.println(e);
             }
             if (tokenInfo != null) {
-                DecodeJwtResponse decodeJwtResponse = new DecodeJwtResponse(tokenEntity.get().getInputData(), tokenInfo.getExpired_date());
-                return decodeJwtResponse;
+                return new DecodeJwtResponseDTO(tokenInfo.getData(), tokenInfo.getExpired_date());
             }
         }
         return null;

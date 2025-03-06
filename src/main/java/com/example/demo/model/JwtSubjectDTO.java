@@ -2,12 +2,9 @@ package com.example.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
-public class JwtSubject {
+public class JwtSubjectDTO {
     private String created_by;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
@@ -15,8 +12,26 @@ public class JwtSubject {
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date created_date;
+    private String uuid;
+    private String data;
 
-    public JwtSubject() {
+    public JwtSubjectDTO() {
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
     }
 
     public String getCreated_by() {

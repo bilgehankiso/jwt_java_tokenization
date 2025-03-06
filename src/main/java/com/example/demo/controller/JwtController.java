@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.interfaces.IJwtService;
-import com.example.demo.model.DecodeJwtResponse;
+import com.example.demo.model.DecodeJwtResponseDTO;
 import com.example.demo.model.JwtRequest;
 import com.example.demo.model.JwtResponse;
 import com.example.demo.model.ValidateJwtRequest;
@@ -42,7 +42,7 @@ public class JwtController {
     }
 
     @PostMapping("/decode")
-    public ResponseEntity<DecodeJwtResponse> decodeJwt(@RequestBody ValidateJwtRequest jwtRequest) {
+    public ResponseEntity<DecodeJwtResponseDTO> decodeJwt(@RequestBody ValidateJwtRequest jwtRequest) {
         try {
             var result = jwtService.decodeJwtToken(jwtRequest.getTokenUuid());
             if (result == null) {

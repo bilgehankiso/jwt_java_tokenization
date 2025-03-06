@@ -2,11 +2,11 @@ package com.example.demo.model;
 
 import java.util.Date;
 
-public class DecodeJwtResponse {
+public class DecodeJwtResponseDTO {
     private String data;
     private Date expiredDate;
 
-    public DecodeJwtResponse(String data, Date expiredDate) {
+    public DecodeJwtResponseDTO(String data, Date expiredDate) {
         this.data = data;
         this.expiredDate = expiredDate;
     }
