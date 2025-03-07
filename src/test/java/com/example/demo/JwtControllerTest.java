@@ -38,6 +38,15 @@ class JwtControllerTest {
         assertNotNull(response.getBody().getTokenType());
         assertFalse(response.getBody().getToken().isEmpty());
     }
+    @Test
+    void testGenerateJwt_Failure() {
+        JwtRequest jwtRequest = new JwtRequest("", "");
+
+        ResponseEntity<JwtResponse> response = jwtController.generateJwt(jwtRequest);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNull(response.getBody());
+    }
 
     @Test
     void testValidateJwt_Valid() {
