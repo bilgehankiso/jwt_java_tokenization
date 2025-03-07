@@ -18,6 +18,14 @@ public class JwtSubjectDTO {
     public JwtSubjectDTO() {
     }
 
+    public JwtSubjectDTO(String created_by, Date expired_date, Date created_date, String uuid, String data) {
+        this.created_by = created_by;
+        this.expired_date = expired_date;
+        this.created_date = created_date;
+        this.uuid = uuid;
+        this.data = data;
+    }
+
     public String getUuid() {
         return uuid;
     }

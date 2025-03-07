@@ -24,6 +24,7 @@ public class JwtService implements IJwtService {
     private final JwtTokenRepository IJwtTokenRepository;
 
     private static final String SECRET_KEY = "M2Y1YTk4YzAxZjY0NDYzZWZmY2QyYTkzZDI5ZDU2ZDZkZjY4YzA0ZGViZDNlMGNhZTBiZDE2OTkxNzNi";
+
     public JwtService(JwtTokenRepository IJwtTokenRepository) {
         this.IJwtTokenRepository = IJwtTokenRepository;
     }
@@ -39,10 +40,7 @@ public class JwtService implements IJwtService {
 
         Map<String, String> subject = new HashMap<>();
         subject.put("uuid", uuid);
-        subject.put("data", jwtRequest.getInputData());
         subject.put("created_by", jwtRequest.getClientName());
-        subject.put("created_date", formatToISO(createdDate));
-        subject.put("expired_date", formatToISO(expiredDate));
 
         String subjectJson;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -56,6 +54,8 @@ public class JwtService implements IJwtService {
         String token = Jwts.builder()
                 .setSubject(subjectJson)
                 .claim("inputData", jwtRequest.getInputData())
+                .claim("createdDate", dateToISO(createdDate))
+                .claim("expiredDate", dateToISO(expiredDate))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
 
@@ -75,17 +75,19 @@ public class JwtService implements IJwtService {
                         .parseClaimsJws(token)
                         .getBody();
 
+                JwtSubjectDTO tokenInfo = new JwtSubjectDTO();
+
                 ObjectMapper objectMapper = new ObjectMapper();
-                JwtSubjectDTO tokenInfo = null;
-                try {
-                    tokenInfo = objectMapper.readValue(claims.getSubject(), JwtSubjectDTO.class);
-                } catch (Exception e) {
-                    System.out.println(e);
-                }
-                if (tokenInfo != null
-                        && tokenInfo.getUuid().equals(uuid)
-                        && tokenInfo.getExpired_date().after(new Date())
-                        && tokenInfo.getCreated_date().before(new Date())
+                Map<String, String> subjectMap = objectMapper.readValue(claims.getSubject(), Map.class);
+
+                tokenInfo.setData(claims.get("inputData", String.class));
+                tokenInfo.setUuid(subjectMap.get("uuid"));
+                tokenInfo.setCreated_by(subjectMap.get("created_by"));
+
+                tokenInfo.setExpired_date(ISOtoDate(claims.get("expiredDate", String.class)));
+                tokenInfo.setCreated_date(ISOtoDate(claims.get("createdDate", String.class)));
+
+                if (tokenInfo.getUuid().equals(uuid) && tokenInfo.getExpired_date().after(new Date()) && tokenInfo.getCreated_date().before(new Date())
                 ) {
                     return true;
                 }
@@ -107,24 +109,43 @@ public class JwtService implements IJwtService {
                     .parseClaimsJws(token)
                     .getBody();
 
+            JwtSubjectDTO tokenInfo = new JwtSubjectDTO();
+
             ObjectMapper objectMapper = new ObjectMapper();
-            JwtSubjectDTO tokenInfo = null;
+            Map<String, String> subjectMap = null;
             try {
-                tokenInfo = objectMapper.readValue(claims.getSubject(), JwtSubjectDTO.class);
-            } catch (Exception e) {
-                System.out.println(e);
+                subjectMap = objectMapper.readValue(claims.getSubject(), Map.class);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
             }
-            if (tokenInfo != null) {
+
+            tokenInfo.setData(claims.get("inputData", String.class));
+            tokenInfo.setUuid(subjectMap.get("uuid"));
+            tokenInfo.setCreated_by(subjectMap.get("created_by"));
+            tokenInfo.setExpired_date(ISOtoDate(claims.get("expiredDate", String.class)));
+            tokenInfo.setCreated_date(ISOtoDate(claims.get("createdDate", String.class)));
+
+            if ( tokenInfo.getUuid().equals(uuid) ) {
                 return new DecodeJwtResponseDTO(tokenInfo.getData(), tokenInfo.getExpired_date());
             }
         }
         return null;
     }
 
-    private static String formatToISO(Date date) {
+    private static String dateToISO(Date date) {
         Instant instant = date.toInstant();
         ZonedDateTime zonedDateTime = instant.atZone(java.time.ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
         return zonedDateTime.format(formatter);
+    }
+    public static Date ISOtoDate(String strISO) {
+        try {
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
+            ZonedDateTime zonedDateTime = ZonedDateTime.parse(strISO, dateTimeFormatter);
+            return Date.from(zonedDateTime.toInstant());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 }
