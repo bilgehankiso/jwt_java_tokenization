@@ -27,7 +27,7 @@ class JwtControllerTest {
 
     @Test
     void testGenerateJwt() {
-        JwtRequest jwtRequest = new JwtRequest("clientName", "inputData");
+        JwtRequest jwtRequest = new JwtRequest("test", "tester");
 
         ResponseEntity<JwtResponse> response = jwtController.generateJwt(jwtRequest);
 
