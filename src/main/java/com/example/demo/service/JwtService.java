@@ -75,20 +75,9 @@ public class JwtService implements IJwtService {
                         .parseClaimsJws(token)
                         .getBody();
 
-                JwtSubjectDTO tokenInfo = new JwtSubjectDTO();
+                JwtSubjectDTO tokenInfo = claimsToJwtSubjectDTO(claims);
 
-                ObjectMapper objectMapper = new ObjectMapper();
-                Map<String, String> subjectMap = objectMapper.readValue(claims.getSubject(), Map.class);
-
-                tokenInfo.setData(claims.get("inputData", String.class));
-                tokenInfo.setUuid(subjectMap.get("uuid"));
-                tokenInfo.setCreated_by(subjectMap.get("created_by"));
-
-                tokenInfo.setExpired_date(ISOtoDate(claims.get("expiredDate", String.class)));
-                tokenInfo.setCreated_date(ISOtoDate(claims.get("createdDate", String.class)));
-
-                if (tokenInfo.getUuid().equals(uuid) && tokenInfo.getExpired_date().after(new Date()) && tokenInfo.getCreated_date().before(new Date())
-                ) {
+                if (tokenInfo.getUuid().equals(uuid) && tokenInfo.getExpired_date().after(new Date()) && tokenInfo.getCreated_date().before(new Date())) {
                     return true;
                 }
 
@@ -109,23 +98,9 @@ public class JwtService implements IJwtService {
                     .parseClaimsJws(token)
                     .getBody();
 
-            JwtSubjectDTO tokenInfo = new JwtSubjectDTO();
+            JwtSubjectDTO tokenInfo = claimsToJwtSubjectDTO(claims);
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, String> subjectMap = null;
-            try {
-                subjectMap = objectMapper.readValue(claims.getSubject(), Map.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-
-            tokenInfo.setData(claims.get("inputData", String.class));
-            tokenInfo.setUuid(subjectMap.get("uuid"));
-            tokenInfo.setCreated_by(subjectMap.get("created_by"));
-            tokenInfo.setExpired_date(ISOtoDate(claims.get("expiredDate", String.class)));
-            tokenInfo.setCreated_date(ISOtoDate(claims.get("createdDate", String.class)));
-
-            if ( tokenInfo.getUuid().equals(uuid) ) {
+            if (tokenInfo.getUuid().equals(uuid)) {
                 return new DecodeJwtResponseDTO(tokenInfo.getData(), tokenInfo.getExpired_date());
             }
         }
@@ -147,5 +122,24 @@ public class JwtService implements IJwtService {
             System.out.println(e.getMessage());
         }
         return null;
+    }
+    private JwtSubjectDTO claimsToJwtSubjectDTO(Claims claims) {
+        JwtSubjectDTO tokenInfo = new JwtSubjectDTO();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> subjectMap = null;
+        try {
+            subjectMap = objectMapper.readValue(claims.getSubject(), Map.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        tokenInfo.setData(claims.get("inputData", String.class));
+        tokenInfo.setUuid(subjectMap.get("uuid"));
+        tokenInfo.setCreated_by(subjectMap.get("created_by"));
+        tokenInfo.setExpired_date(ISOtoDate(claims.get("expiredDate", String.class)));
+        tokenInfo.setCreated_date(ISOtoDate(claims.get("createdDate", String.class)));
+
+        return tokenInfo;
     }
 }
