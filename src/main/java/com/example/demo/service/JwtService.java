@@ -30,6 +30,10 @@ public class JwtService implements IJwtService {
     }
 
     public JwtResponse generateJwtToken(JwtRequest jwtRequest) {
+        if (jwtRequest == null || jwtRequest.getInputData() == null || jwtRequest.getInputData().isEmpty() ||
+                jwtRequest.getClientName() == null || jwtRequest.getClientName().isEmpty()) {
+            return null;
+        }
         String uuid = UUID.randomUUID().toString();
 
         Date createdDate = new Date(System.currentTimeMillis());
@@ -66,6 +70,9 @@ public class JwtService implements IJwtService {
     }
 
     public boolean validateJwtToken(String uuid) {
+        if (uuid == null || uuid.isEmpty()) {
+            return false;
+        }
         Optional<JwtTokenEntity> tokenEntity = IJwtTokenRepository.findByUuid(uuid);
         if (tokenEntity.isPresent()) {
             String token = tokenEntity.get().getToken();
@@ -89,6 +96,9 @@ public class JwtService implements IJwtService {
     }
 
     public DecodeJwtResponseDTO decodeJwtToken(String uuid) {
+        if (uuid == null || uuid.isEmpty()) {
+            return null;
+        }
         Optional<JwtTokenEntity> tokenEntity = IJwtTokenRepository.findByUuid(uuid);
         if (tokenEntity.isPresent()) {
             String token = tokenEntity.get().getToken();
@@ -113,6 +123,7 @@ public class JwtService implements IJwtService {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
         return zonedDateTime.format(formatter);
     }
+
     public static Date ISOtoDate(String strISO) {
         try {
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
@@ -123,6 +134,7 @@ public class JwtService implements IJwtService {
         }
         return null;
     }
+
     private JwtSubjectDTO claimsToJwtSubjectDTO(Claims claims) {
         JwtSubjectDTO tokenInfo = new JwtSubjectDTO();
 
